@@ -11,7 +11,12 @@ const UserSchema = new Schema(
         phone: { type: String },
         createdAt: { type: Date, default: Date.now },
         profilePicture: String,
-        role: { type: String, default: "user", enum: ["admin", "user", "staff", "vendor"] },
+        role: { type: String, default: "customer", enum: ["admin", "customer", "staff", "vendor", "venue"] },
+        onboardingComplete: { type: Boolean, default: false },
+        roleSpecificId: { type: mongoose.Schema.Types.ObjectId, refPath: 'roleModel' },
+        roleModel: { type: String, enum: ['Vendor', 'Venue'] },
+        overallBudget: { type: Number, default: 0 },
+        weddingDate: { type: Date }
     },
     {
         timestamps: true,

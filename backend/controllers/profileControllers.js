@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const { enqueueMedia } = require("../services/mediaService");
+const Booking = require("../models/bookingModel");
 
 const isValidIndianPhone = (phone) => {
     const phoneRegex = /^[6-9]\d{9}$/;
@@ -88,5 +89,68 @@ exports.uploadProfilePicture = async (req, res) => {
     } catch (error) {
         console.error("Profile Upload Error:", error);
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getDashboardData = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const bookings = await Booking.find({ customerId: userId })
+            .populate("providerId", "name coverImage location")
+            .sort({ bookingDate: 1 });
+
+        let totalBudgetUsed = 0;
+        let pendingInquiries = 0;
+        let vendorsBooked = 0;
+        const timeline = [];
+
+        bookings.forEach(booking => {
+            if (booking.status === "pending") {
+                pendingInquiries++;
+            } else if (booking.status === "accepted" || booking.status === "completed") {
+                vendorsBooked++;
+                totalBudgetUsed += (booking.totalAmount || 0);
+
+                if (booking.bookingDate) {
+                    timeline.push({
+                        title: `Booked ${booking.providerId?.name || "Provider"}`,
+                        date: new Date(booking.bookingDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+                        time: new Date(booking.bookingDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+                        timestamp: booking.bookingDate
+                    });
+                }
+            }
+        });
+
+        timeline.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        let daysToIDo = null;
+        if (user.weddingDate) {
+            const diffTime = new Date(user.weddingDate).getTime() - new Date().getTime();
+            daysToIDo = diffTime > 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 0;
+        }
+
+        res.status(200).json({
+            success: true,
+            dashboard: {
+                budgetUsed: totalBudgetUsed,
+                overallBudget: user.overallBudget || 0,
+                daysToIDo: daysToIDo,
+                weddingDate: user.weddingDate,
+                vendorsBooked,
+                pendingInquiries,
+                bookings,
+                timeline
+            }
+        });
+    } catch (error) {
+        console.error("Dashboard Error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

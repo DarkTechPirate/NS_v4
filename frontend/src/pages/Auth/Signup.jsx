@@ -36,7 +36,7 @@ const Signup = () => {
                 confirmPassword: formData.confirmPassword
             });
             loginUser(data.user);
-            navigate('/dashboard');
+            navigate('/onboarding');
         } catch (err) {
             setError(err.response?.data?.message || 'Signup failed');
         }

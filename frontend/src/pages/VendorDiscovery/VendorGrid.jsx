@@ -1,76 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getAllVendors } from '../../services/vendorService';
+import { getAllVenues } from '../../services/venueService';
 
-const VENDORS = [
-    {
-        id: 1,
-        name: 'Aurum Floral Studio',
-        category: 'Floral Design',
-        price: 'From $8,000',
-        location: 'Lake Como, Italy',
-        rating: '5.0',
-        image: 'https://images.unsplash.com/photo-1562699312-8441050eef0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        delay: '0.1s'
-    },
-    {
-        id: 2,
-        name: 'Elysian Events',
-        category: 'Full Planning',
-        price: 'From $12,000',
-        location: 'Paris, France',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: false,
-        delay: '0.2s'
-    },
-    {
-        id: 3,
-        name: 'Lumière Photography',
-        category: 'Fine Art Photo',
-        price: 'From $6,500',
-        location: 'New York, USA',
-        rating: '5.0',
-        image: 'https://images.unsplash.com/photo-1533158388470-9a216a5dbe80?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        delay: '0.3s'
-    },
-    {
-        id: 4,
-        name: 'Maison de Goût',
-        category: 'Catering',
-        price: 'From $250/pp',
-        location: 'Lyon, France',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: false,
-        delay: '0.4s'
-    },
-    {
-        id: 5,
-        name: 'The Grand Estate',
-        category: 'Venue',
-        price: 'From $20,000',
-        location: 'Tuscany, Italy',
-        rating: '5.0',
-        image: 'https://images.unsplash.com/photo-1519225468359-2996515c9dc4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: true,
-        delay: '0.5s'
-    },
-    {
-        id: 6,
-        name: 'Velvet & Vine',
-        category: 'Stationery',
-        price: 'From $2,000',
-        location: 'London, UK',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1586942398572-c5188f615456?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-        verified: false,
-        delay: '0.6s'
-    }
-];
+const VendorGrid = ({ type = 'vendors' }) => {
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-const VendorGrid = () => {
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                const res = type === 'venues' ? await getAllVenues() : await getAllVendors();
+                if (res.success) setItems(res.data);
+            } catch (err) {
+                console.error(`Failed to fetch ${type}`, err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchItems();
+    }, [type]);
+
     return (
         <main className="flex-1 p-6 lg:p-10 flex flex-col gap-8">
             {/* Page Header & Search */}
@@ -116,39 +66,45 @@ const VendorGrid = () => {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {VENDORS.map((vendor, index) => (
-                    <Link to={`/vendors/${vendor.id}`} key={vendor.id} className="group flex flex-col gap-4 cursor-pointer animate-fade-in-up" style={{ animationDelay: vendor.delay }}>
-                        <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg bg-lux-rough">
-                            <img src={vendor.image} alt={vendor.name} className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100" />
-                            {/* Hover Overlay Border */}
-                            <div className="absolute inset-0 border-[1px] border-lux-gold/0 group-hover:border-lux-gold/100 transition-all duration-500 rounded-lg pointer-events-none z-10"></div>
-                            {/* Hover Button */}
-                            <div className="absolute bottom-6 left-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                                <button className="w-full bg-lux-navy/80 backdrop-blur text-lux-pale hover:bg-lux-gold hover:text-white text-sm font-semibold py-3 rounded border border-lux-pale/10 shadow-lg transition-colors">View Portfolio</button>
+            {loading ? (
+                <div className="flex justify-center items-center py-20 text-lux-pale/60">Loading {type}...</div>
+            ) : items.length === 0 ? (
+                <div className="flex justify-center items-center py-20 text-lux-pale/60">No {type} found. Start by assigning some.</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {items.map((item, index) => (
+                        <Link to={`/${type}/${item._id}`} key={item._id} className="group flex flex-col gap-4 cursor-pointer animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                            <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg bg-lux-rough">
+                                <img src={item.coverImage || item.images?.[0] || 'https://images.unsplash.com/photo-1562699312-8441050eef0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} alt={item.name} className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100" />
+                                {/* Hover Overlay Border */}
+                                <div className="absolute inset-0 border-[1px] border-lux-gold/0 group-hover:border-lux-gold/100 transition-all duration-500 rounded-lg pointer-events-none z-10"></div>
+                                {/* Hover Button */}
+                                <div className="absolute bottom-6 left-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
+                                    <button className="w-full bg-lux-navy/80 backdrop-blur text-lux-pale hover:bg-lux-gold hover:text-white text-sm font-semibold py-3 rounded border border-lux-pale/10 shadow-lg transition-colors">View {type === 'venues' ? 'Gallery' : 'Portfolio'}</button>
+                                </div>
+                                {/* Badge */}
+                                {item.verified && (
+                                    <div className="absolute top-4 right-4 bg-lux-gold/90 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded shadow-md">Verified</div>
+                                )}
                             </div>
-                            {/* Badge */}
-                            {vendor.verified && (
-                                <div className="absolute top-4 right-4 bg-lux-gold/90 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded shadow-md">Verified</div>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-start">
-                                <h3 className="text-lux-pale text-xl font-medium group-hover:text-lux-gold transition-colors">{vendor.name}</h3>
-                                <div className="flex items-center gap-1 text-lux-gold">
-                                    <span className="text-sm font-bold">{vendor.rating}</span>
-                                    <span className="material-symbols-outlined text-[16px] overflow-hidden" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-lux-pale text-xl font-medium group-hover:text-lux-gold transition-colors">{item.name}</h3>
+                                    <div className="flex items-center gap-1 text-lux-gold">
+                                        <span className="text-sm font-bold">{item.rating || 'New'}</span>
+                                        <span className="material-symbols-outlined text-[16px] overflow-hidden" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                                    </div>
+                                </div>
+                                <p className="text-lux-pale/50 text-sm font-light">{item.location}</p>
+                                <div className="flex items-center justify-between mt-2 pt-3 border-t border-lux-pale/5">
+                                    <span className="text-xs text-lux-pale/40 uppercase tracking-widest">{type === 'venues' ? 'Venue' : item.category}</span>
+                                    <span className="text-sm text-lux-pale font-medium">{item.priceRate || item.price}</span>
                                 </div>
                             </div>
-                            <p className="text-lux-pale/50 text-sm font-light">{vendor.location}</p>
-                            <div className="flex items-center justify-between mt-2 pt-3 border-t border-lux-pale/5">
-                                <span className="text-xs text-lux-pale/40 uppercase tracking-widest">{vendor.category}</span>
-                                <span className="text-sm text-lux-pale font-medium">{vendor.price}</span>
-                            </div>
-                        </div>
-                    </Link>
-                ))}
-            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
 
             {/* Pagination / Load More */}
             <div className="flex justify-center mt-12 mb-8">

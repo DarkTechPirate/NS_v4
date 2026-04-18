@@ -3,7 +3,7 @@ const User = require("../models/userModel");
 const generateTokenAndSetCookie = require("../utils/generateToken");
 
 const protect =
-    ({ admin = false, staff = false } = {}) =>
+    ({ admin = false, staff = false, vendor = false } = {}) =>
         async (req, res, next) => {
             try {
                 const token = req.cookies.token;
@@ -26,6 +26,11 @@ const protect =
                 // Allow admin to access staff routes
                 if (staff && req.user.role !== "staff" && req.user.role !== "admin") {
                     return res.status(403).json({ message: "Not authorized as staff" });
+                }
+
+                // Vendor role access
+                if (vendor && req.user.role !== "vendor" && req.user.role !== "admin") {
+                    return res.status(403).json({ message: "Not authorized as vendor" });
                 }
 
                 const nowInSeconds = Math.floor(Date.now() / 1000);

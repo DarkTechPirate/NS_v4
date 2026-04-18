@@ -42,6 +42,7 @@ exports.Signup = async (req, res) => {
                 email: newUser.email,
                 fullname: newUser.fullname,
                 username: newUser.username,
+                onboardingComplete: false,
             },
         });
     } catch (error) {
@@ -73,6 +74,7 @@ exports.Login = async (req, res) => {
                 email: user.email,
                 fullname: user.fullname,
                 username: user.username,
+                onboardingComplete: user.onboardingComplete || false,
             },
         });
     } catch (error) {

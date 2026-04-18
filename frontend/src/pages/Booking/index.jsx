@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { createBooking } from '../../services/bookingService';
 import BookingSummary from './BookingSummary';
 import StepDate from './StepDate';
 import StepPackage from './StepPackage';
@@ -7,14 +7,46 @@ import StepDetails from './StepDetails';
 
 const Booking = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Parse query params
+    const queryParams = new URLSearchParams(location.search);
+    const providerId = queryParams.get('providerId');
+    const providerModel = queryParams.get('providerType') || 'Vendor';
+
     const [step, setStep] = useState(1);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [selectedPackage, setSelectedPackage] = useState(null);
+    const [details, setDetails] = useState({ firstName: '', lastName: '', email: '', phone: '', vision: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step === 3) {
-            navigate('/booking/success');
+            setIsSubmitting(true);
+            setError('');
+            try {
+                if (!providerId) throw new Error("Missing provider information");
+                
+                // Construct the payload
+                const payload = {
+                    providerId,
+                    providerModel,
+                    bookingDate: selectedDate,
+                    eventType: selectedPackage, // Map package to eventType for now
+                    guestCount: 0, // Placeholder
+                    contactPhone: details.phone,
+                    specialRequests: details.vision
+                };
+                
+                await createBooking(payload);
+                navigate('/booking/success');
+            } catch (err) {
+                setError(err.response?.data?.message || err.message || "Booking failed");
+            } finally {
+                setIsSubmitting(false);
+            }
         } else {
             setStep(step + 1);
         }
@@ -46,9 +78,10 @@ const Booking = () => {
 
                         {/* Step Content */}
                         <div className="mb-12 min-h-[400px]">
+                            {error && <div className="mb-4 p-3 bg-red-100 text-red-700 text-sm rounded">{error}</div>}
                             {step === 1 && <StepDate selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} />}
                             {step === 2 && <StepPackage selectedPackage={selectedPackage} setSelectedPackage={setSelectedPackage} />}
-                            {step === 3 && <StepDetails />}
+                            {step === 3 && <StepDetails details={details} setDetails={setDetails} />}
                         </div>
 
                         {/* Navigation Actions */}
@@ -63,10 +96,11 @@ const Booking = () => {
                             </button>
                             <button
                                 onClick={handleNext}
-                                className="bg-lux-gold text-white px-8 py-3 rounded-sm font-bold uppercase text-xs tracking-widest hover:bg-lux-navy transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-px"
+                                disabled={isSubmitting}
+                                className="bg-lux-gold text-white px-8 py-3 rounded-sm font-bold uppercase text-xs tracking-widest hover:bg-lux-navy transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-px disabled:opacity-50"
                             >
-                                {step === 3 ? 'Confirm Request' : 'Continue'}
-                                <span className="material-symbols-outlined text-sm">east</span>
+                                {isSubmitting ? 'Processing...' : (step === 3 ? 'Confirm Request' : 'Continue')}
+                                {!isSubmitting && <span className="material-symbols-outlined text-sm">east</span>}
                             </button>
                         </div>
                     </div>

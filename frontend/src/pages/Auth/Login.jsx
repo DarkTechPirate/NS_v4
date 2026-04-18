@@ -16,7 +16,11 @@ const Login = () => {
         try {
             const data = await login({ email, password });
             loginUser(data.user);
-            navigate('/dashboard');
+            if (data.user.onboardingComplete === false) {
+                navigate('/onboarding');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         }

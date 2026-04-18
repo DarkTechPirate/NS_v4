@@ -6,12 +6,35 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const path = require("path");
 const { createServer } = require("http");
+const { Server } = require("socket.io");
 
 require("./config/passport")(passport);
 const connectMongo = require("./config/connectMongo");
 
 const app = express();
 const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        credentials: true,
+    },
+});
+
+io.on("connection", (socket) => {
+    console.log("Socket connected:", socket.id);
+    
+    socket.on("join", (userId) => {
+        socket.join(userId);
+        console.log(`User ${userId} joined their own room`);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected:", socket.id);
+    });
+});
+
+app.set('io', io); // make io available in controllers if needed
+
 
 app.use(
     cors({

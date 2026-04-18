@@ -38,7 +38,10 @@ router.get(
     (req, res) => {
         generateTokenAndSetCookie(res, req.user._id);
         const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-        res.redirect(clientUrl);
+        if (!req.user.onboardingComplete) {
+            return res.redirect(`${clientUrl}/onboarding`);
+        }
+        res.redirect(`${clientUrl}/dashboard`);
     }
 );
 

@@ -11,7 +11,7 @@ const Venues = () => {
             </div>
             <div className="flex-1 max-w-[1440px] mx-auto w-full flex flex-col lg:flex-row pt-8">
                 <SidebarFilter />
-                <VendorGrid />
+                <VendorGrid type="venues" />
             </div>
         </div>
     );
