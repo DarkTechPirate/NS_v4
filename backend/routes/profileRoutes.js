@@ -4,7 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { protect } = require("../middleware/authMiddleware");
-const { PersonalInfo, uploadProfilePicture, getDashboardData } = require("../controllers/profileControllers");
+const { UpdateProfile, uploadProfilePicture, getDashboardData } = require("../controllers/profileControllers");
 
 // Ensure upload directory exists
 const uploadDir = "public/uploads/";
@@ -36,7 +36,8 @@ const upload = multer({
     limits: { fileSize: 1024 * 1024 * 5 },
 });
 
-router.put("/personal", protect(), PersonalInfo);
+router.put("/personal", protect(), UpdateProfile);
+router.put("/update", protect(), UpdateProfile);
 router.post("/picture", protect(), upload.single("image"), uploadProfilePicture);
 router.get("/dashboard", protect(), getDashboardData);
 

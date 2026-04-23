@@ -17,7 +17,7 @@ exports.Signup = async (req, res) => {
             return res.status(400).json({ message: "Passwords do not match" });
         }
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
@@ -28,7 +28,7 @@ exports.Signup = async (req, res) => {
         const newUser = await User.create({
             fullname: finalFullname,
             username: finalUsername,
-            email,
+            email: email.toLowerCase().trim(),
             password: hashedPassword,
             phone,
         });
@@ -59,11 +59,29 @@ exports.Login = async (req, res) => {
             return res.status(400).json({ message: "Missing fields" });
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
         if (!user) return res.status(404).json({ message: "User not found" });
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(401).json({ message: "Invalid credentials" });
+
+        // Update Login Stats
+        const now = new Date();
+        const clientIp = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        
+        await User.findByIdAndUpdate(user._id, {
+            $inc: { "loginStats.loginCount": 1 },
+            $set: { 
+                "loginStats.lastLoginAt": now,
+                "loginStats.lastLoginIp": clientIp
+            },
+            $push: { 
+                "loginStats.recentLogins": { 
+                    $each: [now], 
+                    $slice: -20 
+                } 
+            }
+        });
 
         generateTokenAndSetCookie(res, user._id);
 

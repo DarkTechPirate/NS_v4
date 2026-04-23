@@ -12,36 +12,46 @@ const isPasswordStrong = (password) => {
     return password.length >= 6; // Simplified for demo
 };
 
-exports.PersonalInfo = async (req, res) => {
+exports.UpdateProfile = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { fullName, phone, password } = req.body;
+        const incomingData = req.body;
+        const { fullname, phone, password, gender, age, profilePicture } = incomingData;
 
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        if (fullName && fullName.trim().length > 0) {
-            user.fullname = fullName.trim();
-        }
+        // 1. Basic Fields
+        if (fullname) user.fullname = fullname.trim();
+        if (gender) user.gender = gender;
+        if (age) user.age = Number(age);
+        if (profilePicture) user.profilePicture = profilePicture;
 
         if (phone) {
             const cleanPhone = phone.toString().replace(/\D/g, "");
             if (!isValidIndianPhone(cleanPhone)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid Indian mobile number."
-                });
+                return res.status(400).json({ success: false, message: "Invalid Indian mobile number." });
             }
             user.phone = cleanPhone;
         }
 
         if (password && password.length > 0) {
-            // Simplified strength check
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
         }
+
+        // 2. Universal Merge Strategy for Nested Sections
+        const sections = ['personalDetails', 'careerDetails', 'familyDetails', 'lifestyleDetails', 'preferences'];
+        sections.forEach(section => {
+            if (incomingData[section] && typeof incomingData[section] === 'object') {
+                Object.entries(incomingData[section]).forEach(([key, value]) => {
+                    // Using Mongoose's .set() for deep paths
+                    user.set(`${section}.${key}`, value);
+                });
+            }
+        });
 
         const updatedUser = await user.save();
         const userResponse = updatedUser.toObject();
