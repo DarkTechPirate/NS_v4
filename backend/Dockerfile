@@ -12,5 +12,5 @@ COPY . .
 
 EXPOSE 5000
 
-# Command to run both the server and the worker
-CMD ["npm", "run", "dev"]
+# Command to run both the server and the worker in production
+CMD ["sh", "-c", "node index.js & node workers/index.js"]
