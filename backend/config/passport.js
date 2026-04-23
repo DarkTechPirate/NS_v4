@@ -7,7 +7,7 @@ module.exports = (passport) => {
             {
                 clientID: process.env.GOOGLE_CLIENT_ID,
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                callbackURL: `${process.env.BACKEND_URL}/api/auth/google/callback`,
+                callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.BACKEND_URL}/api/auth/google/callback`,
             },
             async (accessToken, refreshToken, profile, done) => {
                 try {
@@ -27,7 +27,8 @@ module.exports = (passport) => {
 
                     // 2. Check existing user by Email (Account Linking)
                     if (profile.emails && profile.emails.length > 0) {
-                        user = await User.findOne({ email: profile.emails[0].value });
+                        const email = profile.emails[0].value.toLowerCase().trim();
+                        user = await User.findOne({ email });
                         if (user) {
                             console.log("User found by Email. Linking account...");
                             user.googleId = profile.id;
