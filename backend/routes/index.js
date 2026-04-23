@@ -10,5 +10,6 @@ router.use("/admin", require("./adminRoutes"));
 router.use("/messages", require("./messagingRoutes"));
 router.use("/onboarding", require("./onboardingRoutes"));
 router.use("/wishlist", require("./wishlistRoutes"));
+router.use("/media", require("./mediaRoutes"));
 
 module.exports = router;

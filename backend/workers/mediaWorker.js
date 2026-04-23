@@ -73,7 +73,7 @@ const worker = new Worker(
 
             console.log(`[Worker][STEP 4] MinIO upload DONE`);
 
-            const storedPath = objectKey;
+            const storedPath = `${process.env.BACKEND_URL}/api/media/${objectKey}`;
             const Model = mongoose.model(modelName);
 
             console.log(`[Worker][STEP 5] Updating Database for ${modelName} ID: ${fileId}`);
@@ -89,9 +89,12 @@ const worker = new Worker(
                 const doc = await Model.findById(fileId);
                 if (doc && doc[fieldName]) {
                     const oldPath = doc[fieldName];
-                    if (oldPath && !oldPath.startsWith("http")) {
+                    // If it's a proxy URL, extract the key
+                    if (oldPath && oldPath.includes("/api/media/")) {
+                        const oldKey = oldPath.split("/api/media/")[1];
                          try {
-                            await minio.removeObject(BUCKET, oldPath);
+                            console.log(`[Worker] Deleting old MinIO object: ${oldKey}`);
+                            await minio.removeObject(BUCKET, oldKey);
                         } catch (e) {
                             console.warn(`[Worker] Old object delete failed: ${e}`);
                         }
