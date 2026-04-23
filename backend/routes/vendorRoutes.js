@@ -2,7 +2,16 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { getAllVendors, getVendorById, createVendor, updateVendor, uploadVendorImage } = require("../controllers/vendorControllers");
+const {
+    getAllVendors,
+    getVendorById,
+    createVendor,
+    updateVendor,
+    uploadVendorImage,
+    getVendorSyncCatalog,
+    getTamilNaduWeddingSearchPlan,
+    syncGoogleWeddingVendors,
+} = require("../controllers/vendorControllers");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -28,6 +37,10 @@ const upload = multer({
 router.route("/")
     .get(getAllVendors)
     .post(protect({ vendor: true }), createVendor);
+
+router.get("/sync/catalog", getVendorSyncCatalog);
+router.get("/sync/search-plan", getTamilNaduWeddingSearchPlan);
+router.post("/sync/google", protect({ admin: true }), syncGoogleWeddingVendors);
 
 router.route("/:id")
     .get(getVendorById)

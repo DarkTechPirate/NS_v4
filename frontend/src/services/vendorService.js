@@ -51,3 +51,31 @@ export const uploadVendorImage = async (id, file) => {
         throw error;
     }
 };
+
+export const getVendorSyncCatalog = async () => {
+    try {
+        const response = await api.get('/vendors/sync/catalog');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTamilNaduWeddingSearchPlan = async (params = {}) => {
+    try {
+        const queryParams = new URLSearchParams(params).toString();
+        const response = await api.get(`/vendors/sync/search-plan?${queryParams}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const syncGoogleWeddingVendors = async (payload = {}) => {
+    try {
+        const response = await api.post('/vendors/sync/google', payload);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

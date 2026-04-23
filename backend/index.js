@@ -7,6 +7,7 @@ const passport = require("passport");
 const path = require("path");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const { startVendorSyncScheduler } = require("./services/vendorSyncScheduler");
 
 require("./config/passport")(passport);
 const connectMongo = require("./config/connectMongo");
@@ -57,6 +58,7 @@ const port = process.env.PORT || 3000;
 (async () => {
     try {
         await connectMongo();
+        startVendorSyncScheduler();
         server.listen(port, "0.0.0.0", () => {
             console.log(`☑️ Server running on port ${port}`);
         });
