@@ -10,6 +10,7 @@ const enqueueMedia = async (file, fileId, modelName, fieldName) => {
         outputDir: "public/uploads/",
         modelName,
         fieldName,
+        operation: "replace",
     });
 
     // Since we might not have the worker running, let's also just locally "finish" it or assumes the worker handles it.

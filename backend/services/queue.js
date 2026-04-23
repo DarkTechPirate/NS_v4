@@ -1,10 +1,25 @@
-const mediaQueue = {
-    add: async (name, data) => {
-        console.log(`[Mock Queue] Job added: ${name}`, data);
-        // Simulating immediate processing for simplicity without valid Redis
-        // In a real app this would go to Redis
-        return Promise.resolve();
-    }
-};
+const { Queue } = require("bullmq");
+const Redis = require("ioredis");
 
-module.exports = { mediaQueue };
+const connection = new Redis({
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: Number(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD,
+    db: Number(process.env.REDIS_DB) || 0,
+    maxRetriesPerRequest: null,
+});
+
+// 2. Create the Queue
+const mediaQueue = new Queue("media-processing", { connection });
+// Placeholder queues if needed later
+const notificationQueue = new Queue("notification-queue", { connection });
+const orderProcessingQueue = new Queue("order-processing-queue", {
+    connection,
+});
+
+module.exports = {
+    mediaQueue,
+    notificationQueue,
+    connection,
+    orderProcessingQueue,
+};
