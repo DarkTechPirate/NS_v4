@@ -30,7 +30,7 @@ const Onboarding = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await axios.post('http://localhost:3000/api/onboarding', { role, details }, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/onboarding`, { role, details }, {
                 withCredentials: true
             });
             await checkUser(); // Ensure context is updated

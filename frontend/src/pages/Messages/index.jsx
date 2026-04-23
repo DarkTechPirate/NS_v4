@@ -14,7 +14,7 @@ const Messages = () => {
 
     useEffect(() => {
         if (!user) return;
-        socketRef.current = io('http://localhost:3000');
+        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000');
         socketRef.current.on('connect', () => {
             socketRef.current.emit('join', user._id);
         });
@@ -35,7 +35,7 @@ const Messages = () => {
 
     const fetchConversations = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/messages', { withCredentials: true });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/messages`, { withCredentials: true });
             setConversations(res.data);
         } catch (error) {
             console.error('Failed to fetch conversations', error);
@@ -44,7 +44,7 @@ const Messages = () => {
 
     const fetchMessages = async (conversationId) => {
         try {
-            const res = await axios.get(`http://localhost:3000/api/messages/${conversationId}`, { withCredentials: true });
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/messages/${conversationId}`, { withCredentials: true });
             setMessages(res.data);
         } catch (error) {
             console.error('Failed to fetch messages', error);
@@ -61,7 +61,7 @@ const Messages = () => {
         if (!newMessage.trim() || !activeConversation) return;
 
         try {
-            const res = await axios.post(`http://localhost:3000/api/messages/${activeConversation._id}`, { text: newMessage }, { withCredentials: true });
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/messages/${activeConversation._id}`, { text: newMessage }, { withCredentials: true });
             setMessages(prev => [...prev, res.data]);
             setNewMessage('');
             fetchConversations();
