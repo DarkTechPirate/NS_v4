@@ -38,6 +38,7 @@ router.get(
     (req, res) => {
         generateTokenAndSetCookie(res, req.user._id);
         const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+        console.log(`[Auth] Redirecting after Google Login to: ${clientUrl}`);
         if (!req.user.onboardingComplete) {
             return res.redirect(`${clientUrl}/onboarding`);
         }
