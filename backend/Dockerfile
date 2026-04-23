@@ -1,13 +1,14 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-# Install sharp dependencies and build tools
-RUN apk add --no-cache \
-    vips-dev \
-    build-base \
+# Install native dependencies for sharp and other tools
+RUN apt-get update && apt-get install -y \
     python3 \
-    libc6-compat
+    make \
+    g++ \
+    libvips-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 RUN npm install --omit=dev
