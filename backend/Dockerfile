@@ -1,14 +1,9 @@
-FROM node:20-slim
+FROM node:20
 
 WORKDIR /app
 
-# Install native dependencies for sharp and other tools
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    libvips-dev \
-    && rm -rf /var/lib/apt/lists/*
+# We are using the full 'node:20' image which includes all necessary build tools.
+# Sharp 0.33+ also bundles its own binaries, so no extra system libraries are needed.
 
 COPY package*.json ./
 RUN npm install --omit=dev

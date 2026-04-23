@@ -8,6 +8,8 @@
         "dev": "concurrently \"nodemon index.js\" \"nodemon workers/index.js\""
     },
     "dependencies": {
+        "@img/sharp-libvips-linux-x64": "^1.2.4",
+        "@img/sharp-linux-x64": "^0.34.5",
         "bcryptjs": "^3.0.3",
         "body-parser": "^2.2.1",
         "bullmq": "^5.67.2",
