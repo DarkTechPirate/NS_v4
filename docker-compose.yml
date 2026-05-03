@@ -1,41 +1,20 @@
 services:
-  backend:
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: ns_v4-backend
+    container_name: NS_v4-app
     restart: unless-stopped
-    # Mapping host 5002 to container 5000
     ports:
-      - "127.0.0.1:5003:5000"
-    networks:
-      - infra_internal
+      - "127.0.0.1:3003:3000" 
     env_file:
       - ./backend/.env
-    environment:
-      PORT: 5000
-      NODE_ENV: production
-    # Resource limits
-    cpus: "0.75"
-    mem_limit: 1g
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=${VITE_API_URL:-https://api1.nammasambandhi.com/api}
-        - VITE_SOCKET_URL=${VITE_SOCKET_URL:-https://api1.nammasambandhi.com}
-    container_name: ns_v4-frontend
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:5179:80"
     networks:
       - infra_internal
-    depends_on:
-      - backend
-    cpus: "0.10"
-    mem_limit: 128m
+    environment:
+      NODE_ENV: production
+    cpus: "1.0"
+    mem_limit: 1.5g
 
 networks:
   infra_internal:

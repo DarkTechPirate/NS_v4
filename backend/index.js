@@ -13,8 +13,10 @@ require("./config/passport")(passport);
 const connectMongo = require("./config/connectMongo");
 
 const app = express();
+app.set('trust proxy', 1);
 const server = createServer(app);
 const io = new Server(server, {
+    path: '/ws/',
     cors: {
         origin: process.env.CLIENT_URL || "http://localhost:5173",
         credentials: true,

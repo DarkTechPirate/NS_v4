@@ -14,7 +14,10 @@ const Messages = () => {
 
     useEffect(() => {
         if (!user) return;
-        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000');
+        socketRef.current = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
+            path: '/ws/',
+            withCredentials: true
+        });
         socketRef.current.on('connect', () => {
             socketRef.current.emit('join', user._id);
         });
