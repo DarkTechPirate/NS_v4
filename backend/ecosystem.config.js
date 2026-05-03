@@ -6,6 +6,7 @@ module.exports = {
       cwd: '/app/backend',
       env: {
         NODE_ENV: 'production',
+        PORT: 3002,
       },
     },
     {
@@ -14,6 +15,7 @@ module.exports = {
       cwd: '/app/backend',
       env: {
         NODE_ENV: 'production',
+        PORT: 3002,
       },
     },
   ],
