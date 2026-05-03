@@ -34,6 +34,9 @@ COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 # Remove the default nginx site to avoid conflicts
 RUN rm -f /etc/nginx/sites-enabled/default
 
+# Final working directory
+WORKDIR /app
+
 # Entrypoint script to start PM2
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
